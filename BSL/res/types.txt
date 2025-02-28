@@ -1,0 +1,180 @@
+ANY = any
+
+CHAR2x2 = Math::char2x2
+CHAR2x3 = Math::char2x3
+CHAR2x4 = Math::char2x4
+SHORT2x2 = Math::short2x2
+SHORT2x3 = Math::short2x3
+SHORT2x4 = Math::short2x4
+INT2x2 = Math::int2x2
+INT2x3 = Math::int2x3
+INT2x4 = Math::int2x4
+LONG2x2 = Math::long2x2
+LONG2x3 = Math::long2x3
+LONG2x4 = Math::long2x4
+UCHAR2x2 = Math::uchar2x2
+UCHAR2x3 = Math::uchar2x3
+UCHAR2x4 = Math::uchar2x4
+USHORT2x2 = Math::ushort2x2
+USHORT2x3 = Math::ushort2x3
+USHORT2x4 = Math::ushort2x4
+UINT2x2 = Math::uint2x2
+UINT2x3 = Math::uint2x3
+UINT2x4 = Math::uint2x4
+ULONG2x2 = Math::ulong2x2
+ULONG2x3 = Math::ulong2x3
+ULONG2x4 = Math::ulong2x4
+
+
+CHAR3x2 = Math::char3x2
+CHAR3x3 = Math::char3x3
+CHAR3x4 = Math::char3x4
+SHORT3x2 = Math::short3x2
+SHORT3x3 = Math::short3x3
+SHORT3x4 = Math::short3x4
+INT3x2 = Math::int3x2
+INT3x3 = Math::int3x3
+INT3x4 = Math::int3x4
+LONG3x2 = Math::long3x2
+LONG3x3 = Math::long3x3
+LONG3x4 = Math::long3x4
+UCHAR3x2 = Math::uchar3x2
+UCHAR3x3 = Math::uchar3x3
+UCHAR3x4 = Math::uchar3x4
+USHORT3x2 = Math::ushort3x2
+USHORT3x3 = Math::ushort3x3
+USHORT3x4 = Math::ushort3x4
+UINT3x2 = Math::uint3x2
+UINT3x3 = Math::uint3x3
+UINT3x4 = Math::uint3x4
+ULONG3x2 = Math::ulong3x2
+ULONG3x3 = Math::ulong3x3
+ULONG3x4 = Math::ulong3x4
+
+
+CHAR4x2 = Math::char4x2
+CHAR42x3 = Math::char4x3
+CHAR4x4 = Math::char4x4
+SHORT4x2 = Math::short4x2
+SHORT4x3 = Math::short4x3
+SHORT4x4 = Math::short4x4
+INT4x2 = Math::int4x2
+INT4x3 = Math::int4x3
+INT4x4 = Math::int4x4
+LONG4x2 = Math::long4x2
+LONG4x3 = Math::long4x3
+LONG4x4 = Math::long4x4
+UCHAR4x2 = Math::uchar4x2
+UCHAR4x3 = Math::uchar4x3
+UCHAR4x4 = Math::uchar4x4
+USHORT4x2 = Math::ushort4x2
+USHORT4x3 = Math::ushort4x3
+USHORT4x4 = Math::ushort4x4
+UINT4x2 = Math::uint4x2
+UINT4x3 = Math::uint4x3
+UINT4x4 = Math::uint4x4
+ULONG4x2 = Math::ulong4x2
+ULONG4x3 = Math::ulong4x3
+ULONG4x4 = Math::ulong4x4
+
+FLOAT2x2 = Math::float2x2
+FLOAT2x3 = Math::float2x3
+FLOAT2x4 = Math::float2x4
+FLOAT3x2 = Math::float3x2
+FLOAT3x3 = Math::float3x3
+FLOAT3x4 = Math::float3x4
+FLOAT4x2 = Math::float4x2
+FLOAT4x3 = Math::float4x3
+FLOAT4x4 = Math::float4x4
+
+DOUBLE2x2 = Math::double2x2
+DOUBLE2x3 = Math::double2x3
+DOUBLE2x4 = Math::double2x4
+DOUBLE3x2 = Math::double3x2
+DOUBLE3x3 = Math::double3x3
+DOUBLE3x4 = Math::double3x4
+DOUBLE4x2 = Math::double4x2
+DOUBLE4x3 = Math::double4x3
+DOUBLE4x4 = Math::double4x4
+
+
+CHAR2 = Math::char2
+SHORT2 = Math::short2
+INT2 = Math::int2
+LONG2 = Math::long2
+UCHAR2 = Math::uchar2
+USHORT2 = Math::ushort2
+UINT2 = Math::uint2
+ULONG2 = Math::ulong2
+
+CHAR3 = Math::char3
+SHORT3 = Math::short3
+INT3 = Math::int3
+LONG3 = Math::long3
+UCHAR3 = Math::uchar3
+USHORT3 = Math::ushort3
+UINT3 = Math::uint3
+ULONG3 = Math::ulong3
+
+CHAR4 = Math::char4
+SHORT4 = Math::short4
+INT4 = Math::int4
+LONG4 = Math::long4
+UCHAR4 = Math::uchar4
+USHORT4 = Math::ushort4
+UINT4 = Math::uint4
+ULONG4 = Math::ulong4
+
+CHAR = char
+SHORT = short
+INT = int
+LONG = long
+UCHAR = uchar
+USHORT = ushort
+UINT = uint
+ULONG = ulong
+
+FLOAT2 = Math::float2
+DOUBLE2 = Math::double2
+
+FLOAT3 = Math::float3
+DOUBLE3 = Math::double3
+
+FLOAT4 = Math::float4
+DOUBLE4 = Math::double4
+
+MATRIX2 = Math::double2x2
+MATRIX3 = Math::double3x3
+MATRIX4 = Math::double4x4
+
+FLOAT = float
+DOUBLE = double
+
+BOOL2x2 = Math::bool2x2
+BOOL2x3 = Math::bool2x3
+BOOL2x4 = Math::bool2x4
+BOOL3x2 = Math::bool3x2
+BOOL3x3 = Math::bool3x3
+BOOL3x4 = Math::bool3x4
+BOOL4x2 = Math::bool4x2
+BOOL4x3 = Math::bool4x3
+BOOL4x4 = Math::bool4x4
+
+BOOL2 = Math::bool2
+BOOL3 = Math::bool3
+BOOL4 = Math::bool4
+
+BOOL = bool
+
+STRING = string
+OBJECT = Object
+
+TRANSFORM = Core::Transform::Transform
+
+ROTATE_ORDER = Math::rotation_order
+
+GEOLOCATION = Geometry::Common::GeoLocation
+GEOTYPE = Geometry::Common::GeometryType
+
+FIELD = Core::Fields::ScalarField
+FIELD3 = Core::Fields::VectorField

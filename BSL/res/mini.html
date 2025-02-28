@@ -1,0 +1,303 @@
+<!-- Little help from GPT in here... -->
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Monaco Editor Tab</title>
+    <style>
+        html,
+        body,
+        #editorContainer {
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="editorContainer"></div>
+
+    <!-- Load Monaco Editor via CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.21.2/min/vs/loader.js"></script>
+
+    <!-- Load QWebChannel (ensure qwebchannel.js is in this folder or adjust the path) -->
+    <script src="qrc:///qtwebchannel/qwebchannel.js"></script>
+
+    <script type="text/javascript">
+        // Set up QWebChannel to expose the Python object (pyEditor) if needed.
+        new QWebChannel(qt.webChannelTransport, function (channel) {
+            window.pyEditor = channel.objects.pyEditor;
+        });
+
+        // Configure the Monaco Editor loader.
+        require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.21.2/min/vs' } });
+        require(['vs/editor/editor.main'], function () {
+            // Register a custom language (if needed).
+            monaco.languages.register({ id: 'bsl' });
+            monaco.languages.setMonarchTokensProvider('bsl', {
+                //defaultToken: "invalid",
+
+                brackets: [
+                    ['{', '}', 'delimiter.curly'],
+                    ['[', ']', 'delimiter.square'],
+                    ['(', ')', 'delimiter.parenthesis'],
+                    ['<', '>', 'delimiter.angle'],
+                ],
+
+                keywords: [
+                    "import", "as",
+                    "for_each", "foreach", "iterate", "while", "do", "nolimit",
+                    "true", "false",
+                    "graph", "compound", "function", "overload",
+                    "using"
+                ],
+
+                float: /([1-9][0-9_]*[0-9]*|0)(\.[0-9][0-9_]*[0-9]*(e(\+|-)?[1-9][0-9_]*[0-9]*)?|(e(\+|-)?[1-9][0-9_]*[0-9]*))([fF]|[dD])?/,
+                _int: /([1-9][0-9_]*[0-9]*|0)/,
+                int: /@_int(?:[uU])?(?:[cC]|[sS]|[iI]|[lL])?/,
+
+                typesSpecial: /(?:NODE|AUTO)/,
+                typesNonMath: /(?:STRING|OBJECT|ROTATE_ORDER|FIELD3|FIELD|ANY|TRANSFORM|GEOLOCATION|GEOTYPE)/,
+                typesMathBase: /(?:BOOL|CHAR|UCHAR|SHORT|USHORT|INT|UINT|LONG|ULONG|FLOAT|DOUBLE)/,
+                typesMath: /(?:@typesMathBase(2x2|2x3|2x4|3x2|3x3|3x4|4x2|4x3|4x4|2|3|4)?)/,
+                typesArray: /(?:@typesNonMath|@typesMath)(\[\]){0,3}/,
+                types: /(?:@typesSpecial|@typesArray)/,
+
+                debugCall: /__debug::(type|dir|inputs|outputs)(?=\()/,
+
+                namespace: /(?:[a-zA-Z_][a-zA-Z0-9_]*::)+/,
+                name: /[a-zA-Z_][a-zA-Z0-9_]*/,
+                variable: /\$[a-zA-Z_][a-zA-Z0-9_]*/,
+                namespace_name: /(?:@namespace)(?:@name)/,
+
+                escapes: /\\(?:[nt\\"'])/,
+
+                tokenizer: {
+                    root: [
+                        {include: "@code"},
+                        [/\/\*/, "comment", "@commentBlock"],
+                    ],
+
+                    code: [
+                        [/\/\/.*/, "comment"],
+
+                        [/#(?=\s*=)/, "keyword"],
+
+                        [/#/, "value.index"],
+                        [/@float/, "value.float"],
+                        [/@int/, "value.int"],
+                        [/@types/, "type"],
+
+                        // this is def a variable
+                        [/@variable/, "variable"],
+
+                        // kwarg indexed
+                        [/@name(?=#\s*=)/, "variable", "@index"],
+
+                        // keyword or variable
+                        [/@name(?=#)/, "variable", "@index"],
+
+                        // debug call
+                        [/@debugCall/, "debug"],
+
+                        // types that dont have shortcuts
+                        [/@namespace_name\s*(?![\(<\w:])/, {
+                            cases: {
+                                "@keywords": "keyword",
+                                "@default": "type",
+                            }
+                        }],
+
+                        // namespace
+                        [/@namespace/, "namespace"],
+
+                        // scope or function call
+                        [/@name(?=\s*[\(<])/, {
+                            cases: {
+                                "@keywords": "keyword",
+                                "@default": "function",
+                            }
+                        }],
+
+                        // keyword or variable
+                        [/@name/, {
+                            cases: {
+                                "@keywords": "keyword",
+                                "@default": "variable",
+                            }
+                        }],
+
+                        [/"([^"\\]|\\.)*$/, 'string.invalid'],  // non-teminated string
+                        [/'([^'\\]|\\.)*$/, 'string.invalid'],  // non-teminated string
+                        [/"/, { token: 'string.quote', bracket: '@open', next: '@stringDouble' }],
+                        [/'/, { token: 'string.quote', bracket: '@open', next: '@stringSingle' }],
+
+                        [/\.\.\./, "identifier"],
+
+                        // function terminals and parm list entry point
+                        [/<[fFpPdD]*>(?=\s*\()/, "terminal", "@parmList"],
+                        [/<.*>(?=\s*\()/, "terminal.invalid", "@parmList"],
+                        [/\(/, "operators", "@parmList"],
+
+                        // honestly not sure what to do with this...
+                        [/{/, "type"],
+                        [/}[uU]?(?:[bB]|[cC]|[sS]|[iI]|[lL]|[fF]|[dD])?/, "type"],
+                    ],
+
+                    codeOne: [
+                       [/\s*$/, { token: "@rematch", bracket: "@close", next: "@pop", nextEmbedded: "@pop" }],
+                       { include: "@code" },
+                    ],
+
+                    index: [
+                        [/#/, "variable", "@pop"],
+                    ],
+
+                    parmList: [
+                        { include: "@whitespace" },
+
+                        [/@name(?=\s*=)/, "variable"],
+
+                        { include: "@root" },
+
+                        [/\(/, "operators", "@push"],
+                        [/\)/, "operators", "@pop"],
+                        [/\)/, "operators"],
+
+                        // recovery
+                        [/;/, "operators", "@popall"],
+                    ],
+
+                    whitespace: [
+                        [/\s+/, "white"]
+                    ],
+
+                    commentBlock: [
+                        [/^\s*>> (?=.)/, { token: "comment.code.delim", bracket: "@open", next: "@codeOne", nextEmbedded: "bsl" }],
+                        [/\*\//, { token: "comment", next: "@pop" }],
+                        [/.*$/, "comment"],
+                    ],
+
+                    stringDouble: [
+                        [/[^\\"]+/, 'string'],
+                        [/@escapes/, 'string.escape'],
+                        [/\\./, 'string.escape.invalid'],
+                        [/"/, { token: 'string.quote', bracket: '@close', next: '@pop' }],
+                    ],
+
+                    stringSingle: [
+                        [/[^\\']+/, 'string'],
+                        [/@escapes/, 'string.escape'],
+                        [/\\./, 'string.escape.invalid'],
+                        [/'/, { token: 'string.quote', bracket: '@close', next: '@pop' }],
+                    ]
+
+                }
+            });
+            monaco.languages.setLanguageConfiguration('bsl', {
+                comments: {
+                    lineComment: '//',
+                    blockComment: ['/*', '*/']
+                },
+                brackets: [
+                    ['{', '}'],
+                    ['[', ']'],
+                    ['(', ')']
+                ],
+                autoClosingPairs: [
+                    { open: '{', close: '}' },
+                    { open: '[', close: ']' },
+                    { open: '(', close: ')' },
+                    { open: '"', close: '"' },
+                    { open: "'", close: "'" }
+                ],
+            });
+
+            monaco.editor.mouseWheelZoom = true;
+            monaco.editor.defineTheme("theme-bsl", {
+                base: "vs-dark",
+                inherit: true,
+                rules: [
+                    {
+                        token: "debug",
+                        foreground: "#d5eea8"
+                    },
+                    {
+                        token: "comment.code.delim",
+                        foreground: "#a0cb8e"
+                    },
+                    {
+                        token: "namespace",
+                        foreground: "#b4b4b4"
+                    },
+                    {
+                        token: "variable",
+                        foreground: "#9cdcfe"
+                    },
+                    {
+                        token: "string.escape",
+                        foreground: "#e7ca7d"
+                    },
+                    {
+                        token: "string.escape.invalid",
+                        foreground: "#ff0000"
+                    },
+                    {
+                        token: "value",
+                        foreground: "#b5cea8"
+                    },
+                    {
+                        token: "terminal",
+                        foreground: "#d4f4d4"
+                    },
+                    {
+                        token: "terminal.invalid",
+                        foreground: "#ff0000"
+                    },
+                ],
+                colors: {}
+            });
+        });
+
+        // Called from Python to initialize the editor.
+        // fileData is a JSON object with keys: fileName, content, language.
+        function initializeEditor(fileData) {
+            //window.pyEditor.test(fileData.content, function (result) { });
+
+            window.editor = monaco.editor.create(document.getElementById("editorContainer"), {
+                value: fileData.content,
+                language: fileData.language,
+                theme: "theme-bsl",
+                automaticLayout: true,
+                mouseWheelZoom: true
+            });
+            window.editor.getModel().setEOL(monaco.editor.EndOfLineSequence.LF);
+
+            // Listen for content changes; notify Python (via QWebChannel) that the file is modified.
+            editor.onDidChangeModelContent(function () {
+                if (window.pyEditor && window.pyEditor.setModified) {
+                    window.pyEditor.setModified(true);
+                }
+            });
+        }
+
+        function getEditorContent() {
+            if (editor) {
+                return editor.getValue();
+            }
+            return "";
+        }
+
+        function setEditorContent(content) {
+            if (editor) {
+                editor.setValue(content);
+            }
+        }
+    </script>
+</body>
+
+</html>

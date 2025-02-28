@@ -1,0 +1,5 @@
+{
+    "Geometry::Common,randomize_geo_property": ["default_value"],
+    "Geometry::Strands::resample_strands": ["count_per_strand", "minimum_resample_distance"],
+    "USD::Prim::define_usd_curves": ["basis", "type"]
+}

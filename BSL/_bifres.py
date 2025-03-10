@@ -165,9 +165,8 @@ def _collect_nodes():
         g_end = time.time()
         print(f"-> {g_end-g_start:.02f}s")
 
-    import pathlib
-    p = pathlib.Path(_constants.PATH_BIFROST_NODES)
-    p.write_text(json.dumps(d_node_data, indent=4))
+    _constants.PATH_BIFROST_NODES.parent.mkdir(parents=True, exist_ok=True)
+    _constants.PATH_BIFROST_NODES.write_text(json.dumps(d_node_data, indent=4))
 
 
 def _collect_enums():
@@ -224,6 +223,7 @@ def _collect_enums():
                         "__path": str(path_json)
                     }
 
+    _constants.PATH_BIFROST_ENUMS.parent.mkdir(parents=True, exist_ok=True)
     _constants.PATH_BIFROST_ENUMS.write_text(json.dumps(d_enums, indent=4))
     # _constants.PATH_BIFROST_NODES.write_text(json.dumps(d_nodes, indent=4))
 
@@ -261,6 +261,7 @@ def _collect_types():
 
     cmds.vnnChangeBracket(s_graph, close=True)
 
+    _constants.PATH_BIFROST_TYPES.parent.mkdir(parents=True, exist_ok=True)
     _constants.PATH_BIFROST_TYPES.write_text(json.dumps(d_types, indent=4))
 
 

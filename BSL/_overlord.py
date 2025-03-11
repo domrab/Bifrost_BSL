@@ -1452,6 +1452,14 @@ class Overlord:
                 if not (b_any and b_all):
                     continue
 
+                n = 1
+                for ls in d_data["suggestions"]:
+                    n *= len(ls)
+
+                if n > 500:
+                    print(f"[{s_func}] Too much memory required to compute {n} overloads")
+                    continue
+
                 for perm in itertools.product(*d_data["suggestions"]):
                     d_data["overloads"]["-".join(perm)] = d_data["overloads"][sa_keys[0]]
 

@@ -171,7 +171,7 @@ def _collect_nodes():
 
 def _collect_enums():
     if "BIFROST_LIB_CONFIG_FILES" in os.environ:
-        sa_paths = os.environ["BIFROST_LIB_CONFIG_FILES"].split(";")
+        sa_paths = os.environ["BIFROST_LIB_CONFIG_FILES"].split(os.pathsep)
 
     # this is the fallback method currently hardcoded
     else:

@@ -189,6 +189,9 @@ def _collect_enums():
             continue
 
         path = pathlib.Path(path)
+        if not path.exists():
+            continue
+
         s_content = path.read_text()
         s_content = "\n".join([s for s in s_content.split("\n") if not s.strip().startswith("#")])
         d_data = json.loads(s_content)

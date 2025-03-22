@@ -107,7 +107,7 @@ function quicksort(LONG[] arr) => LONG[] sorted {
         top = top - 1;
 
         // out_arr already updated for the next iteration!
-        sorted, LONG pivot = qs_partition(arr, low, high);
+        sorted, LONG pivot = internal::quicksort_partition(arr, low, high);
 
         // left update left side of the pivot. Since Bifrost has a pull
         // mechanism, its not sure if this code even executes. Implementing

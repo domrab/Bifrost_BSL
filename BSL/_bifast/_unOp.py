@@ -10,7 +10,11 @@ except:
 class Not(_ast_node.Node):
     @classmethod
     def create(cls, parser_node, value):
-        if not value.value_type().base_type().base_type().is_bool():
+        value_type = value.value_type()
+        if value_type.is_node() and len(value_type.node_data()):
+            value_type = list(value_type.node_data().values())[0]
+
+        if not value_type.base_type().base_type().is_bool():
             return False, f"Cannot invert type '{value.value_type()}'"
 
         return True, cls(parser_node, value, value.value_type())
@@ -22,7 +26,7 @@ class Not(_ast_node.Node):
 
     def copy(self, d_map):
         if self not in d_map:
-            d_map[self] = Not(self._parser_node, self._value.copy(d_map), _type.Type(self._type.s))
+            d_map[self] = Not(self._parser_node, self._value.copy(d_map), self._type.copy())
         return d_map[self]
 
     def value_type(self):
@@ -38,7 +42,12 @@ class Not(_ast_node.Node):
             return self._vnn_result
 
         graph = graph  # type: _bifcmds.Graph
-        self._vnn_result = graph.n_not(self._value.to_vnn(graph))
+
+        value = self._value.to_vnn(graph)
+        if self._value.value_type().is_node():
+            value = value//list(self._value.value_type().node_data())[0]
+
+        self._vnn_result = graph.n_not(value)
         return self._vnn_result
 
 
@@ -58,7 +67,7 @@ class Negate(_ast_node.Node):
 
     def copy(self, d_map):
         if self not in d_map:
-            d_map[self] = Negate(self._parser_node, self._value.copy(d_map), _type.Type(self._type.s))
+            d_map[self] = Negate(self._parser_node, self._value.copy(d_map), self._type.copy())
         return d_map[self]
 
     def value_type(self) -> _type.Type:
@@ -70,6 +79,9 @@ class Negate(_ast_node.Node):
             type_value = value
         else:
             type_value = value.value_type()
+
+        if type_value.is_node() and len(type_value.node_data()):
+            type_value = list(type_value.node_data().values())[0]
 
         if not (type_value.base_type().base_type().is_numeric() or type_value.base_type().is_field()):
             return False, f"Cant negate value of type '{value.value_type()}'"
@@ -119,7 +131,11 @@ class Negate(_ast_node.Node):
             return self._vnn_result
 
         graph = graph  # type: _bifcmds.Graph
-        self._vnn_result = graph.n_negate(self._value.to_vnn(graph))
+
+        value = self._value.to_vnn(graph)
+        if self._value.value_type().is_node():
+            value = value//list(self._value.value_type().node_data())[0]
+        self._vnn_result = graph.n_negate(value)
         return self._vnn_result
 
 

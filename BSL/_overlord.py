@@ -391,6 +391,10 @@ class Overlord:
         if len(input_types) > len(sa_input_port_types):
             return False, (_error.Error, "Too many arguments")
 
+        s_given = "-".join([t.s for t in input_types])
+        if s_given in cls._d_operators[s_func]["overloads"]:
+            return True, (input_types, cls._d_operators[s_func]["overloads"][s_given])
+
         if "auto" in sa_all_ports and s_func not in cls._d_overloads:
             for idx, s_type in enumerate(sa_all_ports):
                 if s_type != "auto":

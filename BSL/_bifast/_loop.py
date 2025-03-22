@@ -166,14 +166,21 @@ class _Loop(_ast_node.Node, _ast_call._MixinCall):
 
         if self._max_iterations is not None:
             memory.define("max_iterations", s_type="long", value=node/"input"//"max_iterations")
-            graph.connect(self._max_iterations.to_vnn(graph), node//"max_iterations")
+            value_mi = self._max_iterations.to_vnn(graph)
+            if self._max_iterations.value_type().is_node():
+                value_mi = value_mi//list(self._max_iterations.value_type().node_data())[0]
+            graph.connect(value_mi, node//"max_iterations")
 
         else:
             cmds.vnnCompound(graph._graph, node, deletePort="max_iterations")
 
         memory.define("#", s_type="long", value=node/"input"//"current_index")
         if self._current_index is not None:
-            graph.connect(self._current_index.to_vnn(graph), node//"current_index")
+            value_ci = self._current_index.to_vnn(graph)
+            if self._current_index.value_type().is_node():
+                value_ci = value_mi//list(self._current_index.value_type().node_data())[0]
+
+            graph.connect(value_ci, node//"current_index")
             memory.define(self._current_index.name(), s_type="long", value=node/"input"//"current_index")
 
         graph.push_context2(node, memory)

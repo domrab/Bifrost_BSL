@@ -83,6 +83,8 @@ class AccessRHS(_ast_node.Node):
 
     def value_type(self) -> _type.Type:
         type_value = self._value.value_type()
+        if type_value.is_node() and len(type_value.node_data()) == 1:
+            type_value = list(type_value.node_data().values())[0]
 
         if isinstance(self._access, str):
             return type_value.get_access(self._access)
@@ -163,7 +165,10 @@ class AccessRHS(_ast_node.Node):
             return self._vnn_result
 
         elif isinstance(self._access, str):
-            node = graph.create_value_node(s_type=self._value.value_type().s)
+            s_type = self._value.value_type().s
+            if self._value.value_type().is_array():
+                s_type = self._value.value_type().base_type().s
+            node = graph.create_value_node(s_type=s_type)
             graph.connect(value, node//"value")
             self._vnn_result = node//f"output.{self._access}"
             return self._vnn_result
@@ -231,7 +236,10 @@ class AccessLHS(_ast_node.Node):
         graph = graph  # type: _bifcmds.Graph
 
         if self._method == "member":
-            node = graph.create_value_node(s_type=self._value.value_type().s)
+            s_type = self._value.value_type().s
+            if self._value.value_type().is_array():
+                s_type = self._value.value_type().base_type().s
+            node = graph.create_value_node(s_type=s_type)
             graph.connect(self._rhs, node//f"value.{self._access}")
             self._vnn_result = node//"output"
             graph.get_memory().set(self._value.name(), self._vnn_result)

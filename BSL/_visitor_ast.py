@@ -442,6 +442,29 @@ class Ast(_node.NodeVisitor):
             s_err = self.format_error(node["scope_result"], f"Results cannot have the same name as arguments: '{sorted(set_dupe_ports)[0]}'")
             raise _error.BfNameError(s_err, b_stacktrace=False)
 
+        # check feedback port types
+        sa_feedback = []
+        d_inputs = {p.name(): p.value_type().s for p in parameters}
+        for i, r in enumerate(results):
+            if not r.feedback():
+                continue
+
+            rt = r.value_type().s
+            rn = r.name()
+            pn = r.feedback()
+            pt = d_inputs[pn]
+
+            # ensure we dont use the same feedback port twice
+            if pn in sa_feedback:
+                s_err = self.format_error(node["scope_result"]["scope_result_list"].children[2*i], f"Duplicate feedback port: '{pn}'")
+                raise _error.BfNameError(s_err, b_stacktrace=False)
+
+            sa_feedback.append(pn)
+
+            if pt != rt:
+                s_err = self.format_error(node["scope_result"], f"Feedback port types dont match: '{pn}[{pt}]@{rn}[{rt}]")
+                raise _error.BfNameError(s_err, b_stacktrace=False)
+
         _bifast.push_scope()
         [_bifast.set_static_variable(param.name(), param.value_type()) for param in parameters]
         [_bifast.set_static_variable(res.name(), res.value_type(), b_write_only=True) for res in results]
@@ -742,7 +765,18 @@ class Ast(_node.NodeVisitor):
                 s_error = self.format_error(node, s_error="Iteration targets must be at least 1D arrays!")
                 raise _error.Error(s_error, b_stacktrace=False)
 
-            return _bifast.LoopParameter(node, s_name, s_type, value, b_iterate)
+            # validate value type
+            value_type = value.value_type()
+            if value_type.is_node() and len(value_type.node_data()) == 1:
+                value_type = list(value_type.node_data().values())[0]
+            _validate_type_cast(self, node, value_type, s_type, s_name)
+
+            status, value = _bifast.LoopParameter.create(node, s_name, s_type, value, b_iterate)
+            if not status:
+                s_err = self.format_error(node, value)
+                raise _error.BfTypeError(s_err, b_stacktrace=False)
+
+            return value
 
         s_name = self.visit(node["name"])
 
@@ -765,7 +799,12 @@ class Ast(_node.NodeVisitor):
             s_error = self.format_error(node, s_error=f"Invalid port name: '{s_name}'!")
             raise _error.Error(s_error, b_stacktrace=False)
 
-        return _bifast.LoopParameter(node, s_name, s_type, None, b_iterate)
+        status, value = _bifast.LoopParameter.create(node, s_name, s_type, None, b_iterate)
+        if not status:
+            s_err = self.format_error(node, value)
+            raise _error.BfTypeError(s_err, b_stacktrace=False)
+
+        return value
 
 
     def v_for_each_result_one(self, node):
@@ -883,6 +922,29 @@ class Ast(_node.NodeVisitor):
             s_err = self.format_error(node["iterate_result"], f"Results cannot have the same name as arguments: '{sorted(set_dupe_ports)[0]}'")
             raise _error.BfNameError(s_err, b_stacktrace=False)
 
+        # check that feedback port types
+        d_inputs = {p.name(): p.value_type().s for p in parameters}
+        sa_feedback = []
+        for i, r in enumerate(results):
+            if not r.state():
+                continue
+
+            rt = r.value_type().s
+            rn = r.name()
+            pn = r.state()
+            pt = d_inputs[pn]
+
+            # ensure we dont use the same feedback port twice
+            if pn in sa_feedback:
+                s_err = self.format_error(node["iterate_result"]["iterate_result_list"].children[2*i], f"Duplicate state port: '{pn}'")
+                raise _error.BfNameError(s_err, b_stacktrace=False)
+
+            sa_feedback.append(pn)
+
+            if pt != rt:
+                s_err = self.format_error(node["iterate_result"], f"State port types dont match: '{pn}[{pt}]@{rn}[{rt}]")
+                raise _error.BfNameError(s_err, b_stacktrace=False)
+
         # b_has_at_least_one_iteration_target checks if any input port is an
         # iteration target if there are no iteration targets, there must be a
         # max_iterations. If there is no max_iterations, an error will be raised
@@ -957,7 +1019,7 @@ class Ast(_node.NodeVisitor):
         parameters = self.visit(node["loop_parameters"])
         results = self.visit(node["do_while_result"])
 
-        if not b_nolimit and max_iterations is None:
+        if not b_nolimit and max_iterations is None and (not any([parm.is_iteration_target() for parm in parameters])):
             s_err = self.format_error(node.children[0], "Missing max_iterations setting or 'nolimit' keyword")
             raise _error.BfSyntaxError(s_err, b_stacktrace=False)
 
@@ -965,6 +1027,29 @@ class Ast(_node.NodeVisitor):
         if set_dupe_ports:
             s_err = self.format_error(node["do_while_result"], f"Results cannot have the same name as arguments: '{sorted(set_dupe_ports)[0]}'")
             raise _error.BfNameError(s_err, b_stacktrace=False)
+
+        # check that feedback port types
+        d_inputs = {p.name(): p.value_type().s for p in parameters}
+        sa_feedback = []
+        for i, r in enumerate(results):
+            if not r.state():
+                continue
+
+            rt = r.value_type().s
+            rn = r.name()
+            pn = r.state()
+            pt = d_inputs[pn]
+
+            # ensure we dont use the same feedback port twice
+            if pn in sa_feedback:
+                s_err = self.format_error(node["do_while_result"]["do_while_result_list"].children[2*i], f"Duplicate state port: '{pn}'")
+                raise _error.BfNameError(s_err, b_stacktrace=False)
+
+            sa_feedback.append(pn)
+
+            if pt != rt:
+                s_err = self.format_error(node["do_while_result"], f"State port types dont match: '{pn}[{pt}]@{rn}[{rt}]")
+                raise _error.BfNameError(s_err, b_stacktrace=False)
 
         _bifast.push_scope()
 
@@ -1592,11 +1677,17 @@ class Ast(_node.NodeVisitor):
 
         for access in visited_children[1]:
             type_value = value.value_type()
+            if type_value.is_node() and len(type_value.node_data()) == 1:
+                type_value = list(type_value.node_data().values())[0]
+
             b_is_array = type_value.is_array()
             b_is_string = type_value == "string"
 
             if isinstance(access, (_bifast.AccessByValue, _bifast.Slice)):
                 type_access = access.value_type()
+                if type_access.is_node() and len(type_access.node_data()) == 1:
+                    type_access = list(type_access.node_data().values())[0]
+
                 if type_value == "Object":
                     s_error = self.format_error(node, "Use object[key, type_or_value] to access an Object!")
                     raise _error.BfRuntimeError(s_error, b_stacktrace=False)

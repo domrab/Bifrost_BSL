@@ -101,6 +101,7 @@ class CallAssociative(_ast_node.Node, _MixinCall):
             ba_numeric = [t.is_numeric() for t in arg_types]
             ba_field = [t.is_field() for t in arg_types]
             sa_types = [t.s for t in arg_types]
+            b_all_same = len(set(sa_types)) == 1
 
             if any(ba_numeric) and (not all(ba_numeric)):
                 return False, f"Cant build array with mixed types: {sa_types}"
@@ -111,19 +112,20 @@ class CallAssociative(_ast_node.Node, _MixinCall):
             elif (not any(ba_numeric) and not any(ba_field)) and len(set(sa_types)) > 1:
                 return False, f"Cant build array with mixed types: {sa_types}"
 
-            if all(ba_numeric):
-                while len(arg_types) > 1:
-                    first = arg_types.pop(0)
-                    second = arg_types.pop(0)
-                    arg_types.insert(0, _type.get_numeric_base_type(first, second))
+            if not b_all_same:
+                if all(ba_numeric):
+                    while len(arg_types) > 1:
+                        first = arg_types.pop(0)
+                        second = arg_types.pop(0)
+                        arg_types.insert(0, _type.get_numeric_base_type(first, second))
 
-            elif all(ba_field):
-                _VF = "Core::Fields::VectorField"
-                _SF = "Core::Fields::ScalarField"
-                while len(arg_types) > 1:
-                    first = arg_types.pop(0)
-                    second = arg_types.pop(0)
-                    arg_types.insert(0, _VF if first == _VF or second.s == _VF else _SF)
+                elif all(ba_field):
+                    _VF = "Core::Fields::VectorField"
+                    _SF = "Core::Fields::ScalarField"
+                    while len(arg_types) > 1:
+                        first = arg_types.pop(0)
+                        second = arg_types.pop(0)
+                        arg_types.insert(0, _VF if first == _VF or second.s == _VF else _SF)
 
             return True, _type.Type(f"array<{arg_types[0].s}>")
 
@@ -222,7 +224,8 @@ class CallAssociative(_ast_node.Node, _MixinCall):
                 value_type = value_type.node_data()[s_port]
 
             # todo: test bool promotion
-            if value_type.base_type().base_type() == "bool" and self.value_type().base_type().base_type() != "bool":
+            result_value_type = list(self._d_outputs.values())[0]
+            if value_type.base_type().base_type() == "bool" and result_value_type.base_type().base_type() != "bool":
                 value = graph.n_to_char(value)
 
             graph.connect(value, graph.add_in_port(node, s_name))

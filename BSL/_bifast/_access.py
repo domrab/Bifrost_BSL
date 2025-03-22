@@ -96,7 +96,8 @@ class AccessRHS(_ast_node.Node):
 
         if type_value.is_array():
             if type_access.is_array():
-                return type_value
+                i_dim = type_access.s.count("<")
+                return _type.Type(i_dim * "array<" + type_value.s[6:-1] + i_dim * ">")
             return _type.Type(type_value.s[6:-1])
 
         raise NotImplementedError("This shouldn't have happened... o_O")

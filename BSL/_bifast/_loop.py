@@ -13,7 +13,9 @@ class LoopParameter(_ast_node.Node):
         type = _type.Type(s_type)
 
         if not type.is_array() and b_iteration_target:
-            return False, "Not array type designated as iteration target"
+            return False, "Non-array type designated as iteration target"
+
+        # todo: compatibility check, this is currently up to the caller
 
         return True, cls(parser_node, s_name, s_type, default, b_iteration_target)
 
